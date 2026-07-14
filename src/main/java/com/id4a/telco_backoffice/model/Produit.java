@@ -30,6 +30,18 @@ public class Produit {
 
     private Boolean actif = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cree_par", nullable = false)
+    private CreePar creePar = CreePar.ADMIN;
+
+    @ManyToOne
+    @JoinColumn(name = "revendeur_createur_id")
+    private Revendeur revendeurCreateur;
+
     @Column(name = "date_creation", updatable = false)
     private LocalDateTime dateCreation = LocalDateTime.now();
+
+    public enum CreePar {
+        ADMIN, REVENDEUR
+    }
 }

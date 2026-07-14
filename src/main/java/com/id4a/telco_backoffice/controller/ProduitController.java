@@ -45,4 +45,14 @@ public class ProduitController {
     public Produit reactivate(@PathVariable Long id) {
         return service.reactivate(id);
     }
+
+    @PostMapping("/revendeur/{revendeurId}")
+    public Produit createByRevendeur(@PathVariable Long revendeurId, @RequestBody Produit p) {
+        return service.createByRevendeur(p, revendeurId);
+    }
+
+    @GetMapping("/revendeur/{revendeurId}")
+    public List<Produit> getByRevendeur(@PathVariable Long revendeurId) {
+        return service.findByRevendeur(revendeurId);
+    }
 }

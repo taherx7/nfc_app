@@ -897,6 +897,12 @@
                                     <option value="true">Actifs</option>
                                     <option value="false">Désactivés</option>
                                 </select>
+                                <select id="filterCreePar" onchange="renderProduits()"
+                                    style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;">
+                                    <option value="">Toutes origines</option>
+                                    <option value="ADMIN">Créés par admin</option>
+                                    <option value="REVENDEUR">Créés par revendeur</option>
+                                </select>
                                 <input id="filterCat" placeholder="Filtrer par catégorie" onkeyup="renderProduits()"
                                     style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;">
                             </div>
@@ -912,6 +918,7 @@
                                         <th>Prix vente</th>
                                         <th>Marge</th>
                                         <th>Statut</th>
+                                        <th>Créé par</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -1230,10 +1237,13 @@
         function renderProduits() {
             const actifFilter = document.getElementById('filterActif').value;
             const catFilter = document.getElementById('filterCat').value.toLowerCase();
+            const creeParFilter = document.getElementById('filterCreePar').value;
             const filtered = allProduits.filter(p =>
                 (actifFilter === '' || String(p.actif) === actifFilter) &&
-                (!catFilter || (p.categorieService || '').toLowerCase().includes(catFilter))
+                (!catFilter || (p.categorieService || '').toLowerCase().includes(catFilter)) &&
+                (!creeParFilter || p.creePar === creeParFilter)
             );
+
             document.getElementById('prodTableBody').innerHTML = filtered.length
                 ? filtered.map(p => {
                     const marge = (parseFloat(p.prixVenteClient) - parseFloat(p.prixAchatRevendeur)).toFixed(2);
@@ -1245,6 +1255,9 @@
           <td><strong>${parseFloat(p.prixVenteClient).toFixed(2)} DT</strong></td>
           <td style="color:var(--green);font-weight:600">+${marge} DT</td>
           <td>${p.actif ? '<span class="badge badge-green">Actif</span>' : '<span class="badge badge-gray">Désactivé</span>'}</td>
+          <td>${p.creePar === 'REVENDEUR'
+                            ? `<span class="badge badge-orange">Revendeur</span><br><small style="color:var(--text-muted)">${p.revendeurCreateur ? p.revendeurCreateur.nom + ' ' + p.revendeurCreateur.prenom : ''}</small>`
+                            : `<span class="badge badge-blue">Admin</span>`}</td>
           <td><div class="td-actions">
             ${p.actif
                             ? `<button class="btn btn-warn btn-sm" onclick="deactivateProduit(${p.id})">Désactiver</button>`
