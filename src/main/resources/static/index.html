@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ID4A Telco — Backoffice</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --brand: #1B1F6B;
+            --brand-light: #2D3491;
+            --accent: #00C0A3;
+            --accent-dark: #009E87;
+            --danger: #D63B3B;
+            --danger-dark: #B52E2E;
+            --warn: #E8A022;
+            --bg: #F0F2F8;
+            --surface: #FFFFFF;
+            --surface2: #F7F8FC;
+            --border: #DDE1EF;
+            --text: #1A1D2E;
+            --text-muted: #6B7080;
+            --green: #1DB87A;
+            --radius: 8px;
+            --shadow: 0 2px 8px rgba(27, 31, 107, 0.09);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            min-height: 100vh;
+        }
+
+        /* ── LOGIN ── */
+        #loginOverlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, var(--brand) 0%, #0E1152 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px 36px;
+            width: 360px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+        }
+
+        .login-card .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--brand);
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .login-card .sub {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 28px;
+        }
+
+        .login-card label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 16px;
+            transition: border-color .2s;
+        }
+
+        .login-card input:focus {
+            border-color: var(--brand);
+        }
+
+        .login-card .btn-login {
+            width: 100%;
+            padding: 11px;
+            background: var(--brand);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .2s;
+        }
+
+        .login-card .btn-login:hover {
+            background: var(--brand-light);
+        }
+
+        #loginError {
+            color: var(--danger);
+            font-size: 13px;
+            margin-top: 10px;
+            min-height: 18px;
+            text-align: center;
+        }
+
+        /* ── LAYOUT ── */
+        #app {
+            display: none;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 220px;
+            background: var(--brand);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            padding: 22px 20px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-logo span {
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .sidebar-logo small {
+            display: block;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        nav {
+            flex: 1;
+            padding: 12px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 20px;
+            color: rgba(255, 255, 255, 0.65);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+            transition: all .18s;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            border-left-color: var(--accent);
+        }
+
+        .nav-item .icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-item .badge {
+            margin-left: auto;
+            background: var(--accent);
+            color: white;
+            border-radius: 10px;
+            padding: 1px 7px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-footer span {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+
+        .btn-logout {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+            width: 100%;
+            transition: all .2s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .main {
+            margin-left: 220px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar h1 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-badge {
+            background: var(--brand);
+            color: white;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .content {
+            padding: 24px 28px;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* ── STATS CARDS ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--brand);
+            margin: 4px 0;
+        }
+
+        .stat-card .sub {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .stat-card.accent .value {
+            color: var(--accent-dark);
+        }
+
+        .stat-card.green .value {
+            color: var(--green);
+        }
+
+        .stat-card.warn .value {
+            color: var(--warn);
+        }
+
+        /* ── SECTION BLOCKS ── */
+        .section-block {
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .section-head {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-head h2 {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .section-body {
+            padding: 20px;
+        }
+
+        /* ── FORM ── */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 8px 10px;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            background: var(--surface2);
+            transition: border-color .2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--brand);
+            background: white;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            padding-top: 2px;
+        }
+
+        /* ── BUTTONS ── */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .18s;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--brand);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--brand-light);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-accent:hover {
+            background: var(--accent-dark);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-dark);
+        }
+
+        .btn-warn {
+            background: var(--warn);
+            color: white;
+        }
+
+        .btn-warn:hover {
+            background: #cc8b18;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1.5px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg);
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        /* ── TABLE ── */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead tr {
+            background: var(--surface2);
+        }
+
+        th {
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            vertical-align: middle;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: var(--surface2);
+        }
+
+        .td-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .empty-row td {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 32px;
+            font-size: 13px;
+        }
+
+        /* ── BADGES ── */
+        .badge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .badge-green {
+            background: #E6F9F3;
+            color: #0E7A4F;
+        }
+
+        .badge-red {
+            background: #FDECEA;
+            color: #9C1F1F;
+        }
+
+        .badge-gray {
+            background: #ECEEF3;
+            color: #555;
+        }
+
+        .badge-orange {
+            background: #FEF3E2;
+            color: #875200;
+        }
+
+        .badge-blue {
+            background: #EAF0FF;
+            color: #1B3B9E;
+        }
+
+        /* ── TOAST ── */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1A1D2E;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all .3s;
+            z-index: 9999;
+            max-width: 320px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        #toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        #toast.success {
+            border-left: 4px solid var(--accent);
+        }
+
+        #toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 10px;
+            padding: 28px;
+            width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 9px 11px;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 16px;
+        }
+
+        .modal input:focus {
+            border-color: var(--brand);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        /* ── FILTER BAR ── */
+        .filter-bar {
+            background: var(--surface2);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .filter-bar .form-grid {
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOGIN -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <div class="logo">ID4A Telco</div>
+            <div class="sub">Accès réservé aux administrateurs</div>
+            <label>Identifiant</label>
+            <input id="loginUser" placeholder="admin" autocomplete="username">
+            <label>Mot de passe</label>
+            <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password"
+                onkeydown="if(event.key==='Enter')login()">
+            <button class="btn-login" onclick="login()">Se connecter</button>
+            <div id="loginError"></div>
+        </div>
+    </div>
+
+    <!-- SUSPEND MODAL -->
+    <div class="modal-overlay" id="suspendModal">
+        <div class="modal">
+            <h3>Suspendre le revendeur</h3>
+            <input id="suspendMotif" placeholder="Motif de suspension (obligatoire)">
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+                <button class="btn btn-warn" onclick="confirmSuspend()">Suspendre</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <span>ID4A Telco</span>
+                <small>Backoffice Admin</small>
+            </div>
+            <nav>
+                <div class="nav-item active" onclick="showTab('dashboard')">
+                    <span class="icon">📊</span> Tableau de bord
+                </div>
+                <div class="nav-item" onclick="showTab('revendeurs')">
+                    <span class="icon">👤</span> Revendeurs
+                    <span class="badge" id="badge-rev">0</span>
+                </div>
+                <div class="nav-item" onclick="showTab('produits')">
+                    <span class="icon">📦</span> Produits
+                    <span class="badge" id="badge-prod">0</span>
+                </div>
+                <div class="nav-item" onclick="showTab('clients')">
+                    <span class="icon">📱</span> Clients finaux
+                    <span class="badge" id="badge-cli">0</span>
+                </div>
+                <div class="nav-item" onclick="showTab('operations')">
+                    <span class="icon">💳</span> Ventes
+                    <span class="badge" id="badge-ops">0</span>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <span id="adminLabel">Connecté</span>
+                <button class="btn-logout" onclick="logout()">Se déconnecter</button>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="topbar">
+                <h1 id="pageTitle">Tableau de bord</h1>
+                <div class="topbar-right">
+                    <span id="currentDate" style="color:var(--text-muted);font-size:13px;"></span>
+                    <span class="admin-badge">Admin</span>
+                </div>
+            </div>
+
+            <div class="content">
+
+                <!-- DASHBOARD -->
+                <div id="tab-dashboard" class="tab-panel active">
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="label">Revendeurs actifs</div>
+                            <div class="value" id="stat-rev-actif">—</div>
+                            <div class="sub" id="stat-rev-sus"></div>
+                        </div>
+                        <div class="stat-card accent">
+                            <div class="label">Produits actifs</div>
+                            <div class="value" id="stat-prod-actif">—</div>
+                            <div class="sub" id="stat-prod-inact"></div>
+                        </div>
+                        <div class="stat-card green">
+                            <div class="label">Clients enregistrés</div>
+                            <div class="value" id="stat-clients">—</div>
+                            <div class="sub">via NFC</div>
+                        </div>
+                        <div class="stat-card warn">
+                            <div class="label">Ventes totales</div>
+                            <div class="value" id="stat-ops">—</div>
+                            <div class="sub" id="stat-ca"></div>
+                        </div>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-head">
+                            <h2>Dernières ventes</h2>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Revendeur</th>
+                                        <th>Client</th>
+                                        <th>Montant</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-ops-tbody">
+                                    <tr class="empty-row">
+                                        <td colspan="5">Chargement...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REVENDEURS -->
+                <div id="tab-revendeurs" class="tab-panel">
+                    <div class="section-block">
+                        <div class="section-head">
+                            <h2>Ajouter un revendeur</h2>
+                        </div>
+                        <div class="section-body">
+                            <form onsubmit="createRevendeur(event)">
+                                <div class="form-grid">
+                                    <div class="form-group"><label>Nom</label><input id="r_nom" placeholder="Ben Salah"
+                                            required></div>
+                                    <div class="form-group"><label>Prénom</label><input id="r_prenom"
+                                            placeholder="Karim" required></div>
+                                    <div class="form-group"><label>Email</label><input id="r_email" type="email"
+                                            placeholder="karim@mail.com" required></div>
+                                    <div class="form-group"><label>Téléphone</label><input id="r_tel"
+                                            placeholder="20123456" required></div>
+                                    <div class="form-group"><label>Mot de passe</label><input id="r_pass"
+                                            type="password" placeholder="••••••••" required></div>
+                                    <div class="form-group"><label>Ville</label><input id="r_ville" placeholder="Tunis">
+                                    </div>
+                                    <div class="form-group"><label>Catégorie</label><input id="r_cat"
+                                            placeholder="Premium"></div>
+                                    <div class="form-group"><label>Plafond (DT)</label><input id="r_plafond"
+                                            type="number" step="0.01" placeholder="5000"></div>
+                                </div>
+                                <div style="margin-top:14px;">
+                                    <button class="btn btn-primary" type="submit">Créer le revendeur</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-head">
+                            <h2>Liste des revendeurs</h2>
+                            <div style="display:flex;gap:8px;">
+                                <select id="filterStatut" onchange="renderRevendeurs()"
+                                    style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;">
+                                    <option value="">Tous statuts</option>
+                                    <option value="ACTIF">Actif</option>
+                                    <option value="SUSPENDU">Suspendu</option>
+                                </select>
+                                <input id="filterVilleRev" placeholder="Filtrer par ville" onkeyup="renderRevendeurs()"
+                                    style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;">
+                            </div>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nom complet</th>
+                                        <th>Email</th>
+                                        <th>Téléphone</th>
+                                        <th>Ville</th>
+                                        <th>Catégorie</th>
+                                        <th>Plafond</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="revTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRODUITS -->
+                <div id="tab-produits" class="tab-panel">
+                    <div class="section-block">
+                        <div class="section-head">
+                            <h2>Ajouter un produit</h2>
+                        </div>
+                        <div class="section-body">
+                            <form onsubmit="createProduit(event)">
+                                <div class="form-grid">
+                                    <div class="form-group"><label>Nom du service</label><input id="p_nom"
+                                            placeholder="Recharge Orange 10DT" required></div>
+                                    <div class="form-group"><label>Catégorie</label><input id="p_cat"
+                                            placeholder="Recharge"></div>
+                                    <div class="form-group"><label>Description</label><input id="p_desc"
+                                            placeholder="Description courte"></div>
+                                    <div class="form-group"><label>Prix achat revendeur (DT)</label><input id="p_achat"
+                                            type="number" step="0.01" placeholder="9.50" required></div>
+                                    <div class="form-group"><label>Prix vente client (DT)</label><input id="p_vente"
+                                            type="number" step="0.01" placeholder="10.00" required></div>
+                                </div>
+                                <div style="margin-top:14px;">
+                                    <button class="btn btn-primary" type="submit">Créer le produit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-head">
+                            <h2>Catalogue de services</h2>
+                            <div style="display:flex;gap:8px;">
+                                <select id="filterActif" onchange="renderProduits()"
+                                    style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;">
+                                    <option value="">Tous</option>
+                                    <option value="true">Actifs</option>
+                                    <option value="false">Désactivés</option>
+                                </select>
+                                <input id="filterCat" placeholder="Filtrer par catégorie" onkeyup="renderProduits()"
+                                    style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;">
+                            </div>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nom du service</th>
+                                        <th>Catégorie</th>
+                                        <th>Prix achat</th>
+                                        <th>Prix vente</th>
+                                        <th>Marge</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prodTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CLIENTS -->
+                <div id="tab-clients" class="tab-panel">
+                    <div class="section-block">
+                        <div class="section-head">
+                            <h2>Clients finaux enregistrés</h2>
+                            <div style="display:flex;gap:8px;">
+                                <select id="filterOp" onchange="renderClients()"
+                                    style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;">
+                                    <option value="">Tous opérateurs</option>
+                                    <option value="ORANGE">Orange</option>
+                                    <option value="TT">TT</option>
+                                    <option value="OOREDOO">Ooredoo</option>
+                                </select>
+                                <input id="filterTel" placeholder="Rechercher par téléphone" onkeyup="renderClients()"
+                                    style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;">
+                            </div>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Téléphone</th>
+                                        <th>Opérateur</th>
+                                        <th>Code NFC</th>
+                                        <th>Inscrit le</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cliTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OPERATIONS -->
+                <div id="tab-operations" class="tab-panel">
+                    <div class="filter-bar">
+                        <form onsubmit="filterOperations(event)">
+                            <div class="form-grid">
+                                <div class="form-group"><label>Revendeur</label>
+                                    <select id="f_revendeur">
+                                        <option value="">Tous les revendeurs</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>Opérateur</label>
+                                    <select id="f_operateur">
+                                        <option value="">Tous opérateurs</option>
+                                        <option value="ORANGE">Orange</option>
+                                        <option value="TT">TT</option>
+                                        <option value="OOREDOO">Ooredoo</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>Ville</label><input id="f_ville" placeholder="Ex: Tunis">
+                                </div>
+                                <div class="form-group"><label>Date début</label><input id="f_debut"
+                                        type="datetime-local"></div>
+                                <div class="form-group"><label>Date fin</label><input id="f_fin" type="datetime-local">
+                                </div>
+                            </div>
+                            <div class="form-actions" style="margin-top:12px;">
+                                <button class="btn btn-primary" type="submit">Appliquer les filtres</button>
+                                <button class="btn btn-ghost" type="button"
+                                    onclick="resetFilter()">Réinitialiser</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-head">
+                            <h2>Résultats</h2>
+                            <span id="ops-count" style="color:var(--text-muted);font-size:13px;"></span>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Revendeur</th>
+                                        <th>Ville</th>
+                                        <th>Client</th>
+                                        <th>Opérateur</th>
+                                        <th>Produits</th>
+                                        <th>Montant</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="opsTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="ops-total"
+                            style="padding:14px 20px;border-top:1px solid var(--border);font-weight:700;font-size:14px;text-align:right;color:var(--brand);">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
+
+    <script>
+        let authHeader = '';
+        let allRevendeurs = [], allProduits = [], allClients = [], allOperations = [];
+        let suspendTargetId = null;
+
+        // ── AUTH ──
+        function login() {
+            const u = document.getElementById('loginUser').value.trim();
+            const p = document.getElementById('loginPass').value;
+            if (!u || !p) { document.getElementById('loginError').innerText = 'Remplissez tous les champs.'; return; }
+            authHeader = 'Basic ' + btoa(u + ':' + p);
+            api('/api/revendeurs').then(() => {
+                sessionStorage.setItem('auth', authHeader);
+                sessionStorage.setItem('admin', u);
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                document.getElementById('adminLabel').innerText = u;
+                document.getElementById('currentDate').innerText = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                loadAll();
+            }).catch(() => {
+                document.getElementById('loginError').innerText = 'Identifiants incorrects.';
+                authHeader = '';
+            });
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            authHeader = '';
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('app').style.display = 'none';
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
+        }
+
+        window.onload = () => {
+            const saved = sessionStorage.getItem('auth');
+            if (saved) {
+                authHeader = saved;
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                document.getElementById('adminLabel').innerText = sessionStorage.getItem('admin') || 'Admin';
+                document.getElementById('currentDate').innerText = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                loadAll();
+            }
+        };
+
+        // ── API ──
+        function api(url, options = {}) {
+            options.headers = Object.assign({}, options.headers, { Authorization: authHeader, 'Content-Type': 'application/json' });
+            return fetch(url, options).then(res => {
+                if (res.status === 204 || res.headers.get('content-length') === '0') return null;
+                return res.json().then(data => {
+                    if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
+                    return data;
+                });
+            });
+        }
+
+        // ── TOAST ──
+        function toast(msg, type = 'success') {
+            const el = document.getElementById('toast');
+            el.innerText = msg;
+            el.className = `show ${type}`;
+            setTimeout(() => el.className = '', 3200);
+        }
+
+        // ── NAV ──
+        const tabTitles = { dashboard: 'Tableau de bord', revendeurs: 'Revendeurs', produits: 'Produits', clients: 'Clients finaux', operations: 'Ventes & Rapports' };
+        function showTab(id) {
+            document.querySelectorAll('.tab-panel').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            event.currentTarget.classList.add('active');
+            document.getElementById('pageTitle').innerText = tabTitles[id] || '';
+        }
+
+        // ── LOAD ALL ──
+        function loadAll() {
+            Promise.all([
+                api('/api/revendeurs'),
+                api('/api/produits'),
+                api('/api/clients'),
+                api('/api/operations')
+            ]).then(([revs, prods, clis, ops]) => {
+                allRevendeurs = revs || [];
+                allProduits = prods || [];
+                allClients = clis || [];
+                allOperations = ops || [];
+                renderDashboard();
+                renderRevendeurs();
+                renderProduits();
+                renderClients();
+                renderOperations(allOperations);
+                fillRevendeurSelect();
+            }).catch(err => toast('Erreur de chargement: ' + err.message, 'error'));
+        }
+
+        // ── DASHBOARD ──
+        function renderDashboard() {
+            const actifs = allRevendeurs.filter(r => r.statut === 'ACTIF').length;
+            const sus = allRevendeurs.filter(r => r.statut === 'SUSPENDU').length;
+            const prodsActifs = allProduits.filter(p => p.actif).length;
+            const prodsInact = allProduits.filter(p => !p.actif).length;
+            const ca = allOperations.reduce((s, o) => s + parseFloat(o.montantTotal || 0), 0);
+
+            document.getElementById('stat-rev-actif').innerText = actifs;
+            document.getElementById('stat-rev-sus').innerText = sus + ' suspendu(s)';
+            document.getElementById('stat-prod-actif').innerText = prodsActifs;
+            document.getElementById('stat-prod-inact').innerText = prodsInact + ' désactivé(s)';
+            document.getElementById('stat-clients').innerText = allClients.length;
+            document.getElementById('stat-ops').innerText = allOperations.length;
+            document.getElementById('stat-ca').innerText = 'CA: ' + ca.toFixed(2) + ' DT';
+
+            document.getElementById('badge-rev').innerText = allRevendeurs.length;
+            document.getElementById('badge-prod').innerText = allProduits.length;
+            document.getElementById('badge-cli').innerText = allClients.length;
+            document.getElementById('badge-ops').innerText = allOperations.length;
+
+            const last5 = [...allOperations].reverse().slice(0, 5);
+            document.getElementById('dashboard-ops-tbody').innerHTML = last5.length
+                ? last5.map(o => `<tr>
+        <td>#${o.id}</td>
+        <td>${o.revendeur.nom} ${o.revendeur.prenom}</td>
+        <td>${o.clientFinal.numeroTelephone}</td>
+        <td><strong>${parseFloat(o.montantTotal).toFixed(2)} DT</strong></td>
+        <td>${fmtDate(o.dateOperation)}</td>
+      </tr>`).join('')
+                : '<tr class="empty-row"><td colspan="5">Aucune vente enregistrée</td></tr>';
+        }
+
+        // ── REVENDEURS ──
+        function renderRevendeurs() {
+            const statutFilter = document.getElementById('filterStatut').value;
+            const villeFilter = document.getElementById('filterVilleRev').value.toLowerCase();
+            const filtered = allRevendeurs.filter(r =>
+                (!statutFilter || r.statut === statutFilter) &&
+                (!villeFilter || (r.ville || '').toLowerCase().includes(villeFilter))
+            );
+            document.getElementById('revTableBody').innerHTML = filtered.length
+                ? filtered.map(r => `<tr>
+        <td>#${r.id}</td>
+        <td><strong>${r.nom} ${r.prenom}</strong></td>
+        <td>${r.email}</td>
+        <td>${r.telephone}</td>
+        <td>${r.ville || '<span style="color:var(--text-muted)">—</span>'}</td>
+        <td>${r.categorie || '<span style="color:var(--text-muted)">—</span>'}</td>
+        <td>${r.plafondAutorise != null ? parseFloat(r.plafondAutorise).toFixed(2) + ' DT' : '—'}</td>
+        <td>${r.statut === 'ACTIF'
+                        ? `<span class="badge badge-green">Actif</span>`
+                        : `<span class="badge badge-red">Suspendu</span><br><small style="color:var(--text-muted)">${r.motifSuspension || ''}</small>`}</td>
+        <td><div class="td-actions">
+          ${r.statut === 'ACTIF'
+                        ? `<button class="btn btn-warn btn-sm" onclick="openSuspend(${r.id})">Suspendre</button>`
+                        : `<button class="btn btn-accent btn-sm" onclick="reactivateRevendeur(${r.id})">Réactiver</button>`}
+          <button class="btn btn-danger btn-sm" onclick="deleteRevendeur(${r.id}, '${r.nom} ${r.prenom}')">Supprimer</button>
+        </div></td>
+      </tr>`).join('')
+                : '<tr class="empty-row"><td colspan="9">Aucun revendeur trouvé</td></tr>';
+        }
+
+        function createRevendeur(e) {
+            e.preventDefault();
+            const body = {
+                nom: r_nom.value.trim(), prenom: r_prenom.value.trim(),
+                email: r_email.value.trim(), telephone: r_tel.value.trim(),
+                motDePasse: r_pass.value, ville: r_ville.value.trim(),
+                categorie: r_cat.value.trim(),
+                plafondAutorise: r_plafond.value ? parseFloat(r_plafond.value) : 0
+            };
+            api('/api/revendeurs', { method: 'POST', body: JSON.stringify(body) })
+                .then(r => { allRevendeurs.push(r); e.target.reset(); renderRevendeurs(); renderDashboard(); toast('Revendeur créé avec succès'); })
+                .catch(err => toast(err.message, 'error'));
+        }
+
+        function openSuspend(id) {
+            suspendTargetId = id;
+            document.getElementById('suspendMotif').value = '';
+            document.getElementById('suspendModal').classList.add('open');
+        }
+        function closeModal() { document.getElementById('suspendModal').classList.remove('open'); suspendTargetId = null; }
+        function confirmSuspend() {
+            const motif = document.getElementById('suspendMotif').value.trim();
+            if (!motif) { toast('Le motif est obligatoire', 'error'); return; }
+            api(`/api/revendeurs/${suspendTargetId}/suspend?motif=${encodeURIComponent(motif)}`, { method: 'PUT' })
+                .then(updated => {
+                    allRevendeurs = allRevendeurs.map(r => r.id === updated.id ? updated : r);
+                    closeModal(); renderRevendeurs(); renderDashboard(); toast('Revendeur suspendu');
+                }).catch(err => toast(err.message, 'error'));
+        }
+        function reactivateRevendeur(id) {
+            api(`/api/revendeurs/${id}/reactivate`, { method: 'PUT' })
+                .then(updated => {
+                    allRevendeurs = allRevendeurs.map(r => r.id === updated.id ? updated : r);
+                    renderRevendeurs(); renderDashboard(); toast('Revendeur réactivé');
+                }).catch(err => toast(err.message, 'error'));
+        }
+        function deleteRevendeur(id, name) {
+            if (!confirm(`Supprimer définitivement "${name}" ?\nCette action est irréversible.`)) return;
+            api(`/api/revendeurs/${id}`, { method: 'DELETE' })
+                .then(() => { allRevendeurs = allRevendeurs.filter(r => r.id !== id); renderRevendeurs(); renderDashboard(); fillRevendeurSelect(); toast('Revendeur supprimé'); })
+                .catch(err => toast(err.message, 'error'));
+        }
+
+        // ── PRODUITS ──
+        function renderProduits() {
+            const actifFilter = document.getElementById('filterActif').value;
+            const catFilter = document.getElementById('filterCat').value.toLowerCase();
+            const filtered = allProduits.filter(p =>
+                (actifFilter === '' || String(p.actif) === actifFilter) &&
+                (!catFilter || (p.categorieService || '').toLowerCase().includes(catFilter))
+            );
+            document.getElementById('prodTableBody').innerHTML = filtered.length
+                ? filtered.map(p => {
+                    const marge = (parseFloat(p.prixVenteClient) - parseFloat(p.prixAchatRevendeur)).toFixed(2);
+                    return `<tr>
+          <td>#${p.id}</td>
+          <td><strong>${p.nomService}</strong>${p.description ? `<br><small style="color:var(--text-muted)">${p.description}</small>` : ''}</td>
+          <td>${p.categorieService ? `<span class="badge badge-blue">${p.categorieService}</span>` : '—'}</td>
+          <td>${parseFloat(p.prixAchatRevendeur).toFixed(2)} DT</td>
+          <td><strong>${parseFloat(p.prixVenteClient).toFixed(2)} DT</strong></td>
+          <td style="color:var(--green);font-weight:600">+${marge} DT</td>
+          <td>${p.actif ? '<span class="badge badge-green">Actif</span>' : '<span class="badge badge-gray">Désactivé</span>'}</td>
+          <td><div class="td-actions">
+            ${p.actif
+                            ? `<button class="btn btn-warn btn-sm" onclick="deactivateProduit(${p.id})">Désactiver</button>`
+                            : `<button class="btn btn-accent btn-sm" onclick="reactivateProduit(${p.id})">Réactiver</button>`}
+            <button class="btn btn-danger btn-sm" onclick="deleteProduit(${p.id}, '${p.nomService}')">Supprimer</button>
+          </div></td>
+        </tr>`;
+                }).join('')
+                : '<tr class="empty-row"><td colspan="8">Aucun produit trouvé</td></tr>';
+        }
+
+        function createProduit(e) {
+            e.preventDefault();
+            const body = {
+                nomService: p_nom.value.trim(), categorieService: p_cat.value.trim(),
+                description: p_desc.value.trim(),
+                prixAchatRevendeur: parseFloat(p_achat.value),
+                prixVenteClient: parseFloat(p_vente.value)
+            };
+            api('/api/produits', { method: 'POST', body: JSON.stringify(body) })
+                .then(p => { allProduits.push(p); e.target.reset(); renderProduits(); renderDashboard(); toast('Produit créé avec succès'); })
+                .catch(err => toast(err.message, 'error'));
+        }
+        function reactivateProduit(id) {
+            api(`/api/produits/${id}/reactivate`, { method: 'PUT' })
+                .then(updated => {
+                    allProduits = allProduits.map(p => p.id === id ? updated : p);
+                    renderProduits(); renderDashboard(); toast('Produit réactivé');
+                }).catch(err => toast(err.message, 'error'));
+        }
+        function deactivateProduit(id) {
+            api(`/api/produits/${id}`, { method: 'DELETE' })
+                .then(() => { allProduits = allProduits.map(p => p.id === id ? { ...p, actif: false } : p); renderProduits(); renderDashboard(); toast('Produit désactivé'); })
+                .catch(err => toast(err.message, 'error'));
+        }
+        function deleteProduit(id, name) {
+            if (!confirm(`Supprimer définitivement "${name}" ?\nImpossible si des ventes existent pour ce produit.`)) return;
+            api(`/api/produits/${id}/permanent`, { method: 'DELETE' })
+                .then(() => { allProduits = allProduits.filter(p => p.id !== id); renderProduits(); renderDashboard(); toast('Produit supprimé'); })
+                .catch(err => toast(err.message, 'error'));
+        }
+
+        // ── CLIENTS ──
+        function renderClients() {
+            const opFilter = document.getElementById('filterOp').value;
+            const telFilter = document.getElementById('filterTel').value.toLowerCase();
+            const filtered = allClients.filter(c =>
+                (!opFilter || c.operateur === opFilter) &&
+                (!telFilter || c.numeroTelephone.includes(telFilter))
+            );
+            const opColors = { ORANGE: 'badge-orange', TT: 'badge-blue', OOREDOO: 'badge-red' };
+            document.getElementById('cliTableBody').innerHTML = filtered.length
+                ? filtered.map(c => `<tr>
+        <td>#${c.id}</td>
+        <td>${c.numeroTelephone}</td>
+        <td><span class="badge ${opColors[c.operateur] || 'badge-gray'}">${c.operateur}</span></td>
+        <td><code style="background:var(--surface2);padding:3px 7px;border-radius:4px;font-size:12px;">${c.codeNfc}</code></td>
+        <td>${fmtDate(c.dateCreation)}</td>
+      </tr>`).join('')
+                : '<tr class="empty-row"><td colspan="5">Aucun client enregistré</td></tr>';
+        }
+
+        // ── OPERATIONS ──
+        function fillRevendeurSelect() {
+            const sel = document.getElementById('f_revendeur');
+            sel.innerHTML = '<option value="">Tous les revendeurs</option>' +
+                allRevendeurs.map(r => `<option value="${r.id}">${r.nom} ${r.prenom}</option>`).join('');
+        }
+
+        function renderOperations(list) {
+            const total = list.reduce((s, o) => s + parseFloat(o.montantTotal || 0), 0);
+            document.getElementById('ops-count').innerText = `${list.length} vente(s)`;
+            document.getElementById('ops-total').innerText = list.length ? `Total : ${total.toFixed(2)} DT` : '';
+            const opColors = { ORANGE: 'badge-orange', TT: 'badge-blue', OOREDOO: 'badge-red' };
+            document.getElementById('opsTableBody').innerHTML = list.length
+                ? list.map(o => {
+                    const produits = (o.details || []).map(d => `${d.produit.nomService} ×${d.quantite}`).join(', ');
+                    return `<tr>
+          <td>#${o.id}</td>
+          <td><strong>${o.revendeur.nom} ${o.revendeur.prenom}</strong></td>
+          <td>${o.revendeur.ville || '—'}</td>
+          <td>${o.clientFinal.numeroTelephone}</td>
+          <td><span class="badge ${opColors[o.clientFinal.operateur] || 'badge-gray'}">${o.clientFinal.operateur}</span></td>
+          <td style="max-width:200px;font-size:12px;color:var(--text-muted)">${produits || '—'}</td>
+          <td><strong>${parseFloat(o.montantTotal).toFixed(2)} DT</strong></td>
+          <td>${fmtDate(o.dateOperation)}</td>
+        </tr>`;
+                }).join('')
+                : '<tr class="empty-row"><td colspan="8">Aucune vente pour ces critères</td></tr>';
+        }
+
+        function filterOperations(e) {
+            e.preventDefault();
+            const params = new URLSearchParams();
+            if (f_ville.value) params.append('ville', f_ville.value);
+            if (f_operateur.value) params.append('operateur', f_operateur.value);
+            if (f_revendeur.value) params.append('revendeurId', f_revendeur.value);
+            if (f_debut.value) params.append('dateDebut', f_debut.value + ':00');
+            if (f_fin.value) params.append('dateFin', f_fin.value + ':00');
+            api('/api/operations/filter?' + params.toString())
+                .then(renderOperations)
+                .catch(err => toast(err.message, 'error'));
+        }
+
+        function resetFilter() {
+            ['f_ville', 'f_operateur', 'f_revendeur', 'f_debut', 'f_fin'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            renderOperations(allOperations);
+        }
+
+        // ── UTILS ──
+        function fmtDate(str) {
+            if (!str) return '—';
+            return new Date(str).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+    </script>
+</body>
+
+</html>
