@@ -859,6 +859,40 @@
                         </div>
                     </div>
                 </div>
+                <!-- CATALOG MANAGER -->
+                <div class="section-block" id="catalogSection" style="display:none;margin-top:20px;">
+                    <div class="section-head">
+                        <h2>Catalogue de <span id="catalogRevName" style="color:var(--accent-dark);"></span></h2>
+                        <button class="btn btn-ghost btn-sm" onclick="closeCatalog()">✕ Fermer</button>
+                    </div>
+                    <div class="section-body">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+
+                            <div>
+                                <p
+                                    style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px;margin-bottom:10px;">
+                                    Produits dans le catalogue
+                                </p>
+                                <div id="assignedList"
+                                    style="display:flex;flex-direction:column;gap:6px;max-height:360px;overflow-y:auto;">
+                                </div>
+                            </div>
+
+                            <div>
+                                <p
+                                    style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px;margin-bottom:10px;">
+                                    Produits admin disponibles
+                                </p>
+                                <div id="availableList"
+                                    style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;margin-bottom:12px;">
+                                </div>
+                                <button class="btn btn-primary" onclick="assignSelected()">➕ Assigner la
+                                    sélection</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
 
                 <!-- PRODUITS -->
                 <div id="tab-produits" class="tab-panel">
@@ -1185,6 +1219,7 @@
                         ? `<button class="btn btn-warn btn-sm" onclick="openSuspend(${r.id})">Suspendre</button>`
                         : `<button class="btn btn-accent btn-sm" onclick="reactivateRevendeur(${r.id})">Réactiver</button>`}
           <button class="btn btn-danger btn-sm" onclick="deleteRevendeur(${r.id}, '${r.nom} ${r.prenom}')">Supprimer</button>
+          <button class="btn btn-accent btn-sm" onclick="openCatalog(${r.id}, '${r.nom} ${r.prenom}')">📋 Catalogue</button>
         </div></td>
       </tr>`).join('')
                 : '<tr class="empty-row"><td colspan="9">Aucun revendeur trouvé</td></tr>';
@@ -1374,6 +1409,106 @@
         function fmtDate(str) {
             if (!str) return '—';
             return new Date(str).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+        // ── CATALOG MANAGEMENT ──
+        let currentCatalogRevId = null;
+        let catalogAssigned = [];
+
+        function openCatalog(revId, revName) {
+            currentCatalogRevId = revId;
+            document.getElementById('catalogRevName').innerText = revName;
+            document.getElementById('catalogSection').style.display = 'block';
+            document.getElementById('catalogSection').scrollIntoView({ behavior: 'smooth' });
+            loadCatalog();
+        }
+
+        function closeCatalog() {
+            document.getElementById('catalogSection').style.display = 'none';
+            currentCatalogRevId = null;
+        }
+
+        function loadCatalog() {
+            api(`/api/produits/revendeur/${currentCatalogRevId}`).then(assigned => {
+                catalogAssigned = assigned;
+
+                document.getElementById('assignedList').innerHTML = assigned.length
+                    ? assigned.map(p => {
+                        const isCustom = p.creePar === 'REVENDEUR';
+                        return `
+                <div style="display:flex;align-items:center;justify-content:space-between;
+                            background:var(--surface2);border:1px solid var(--border);
+                            border-radius:6px;padding:9px 12px;">
+                    <div>
+                        <strong style="font-size:13px;">${p.nomService}</strong>
+                        <span style="color:var(--text-muted);font-size:12px;margin-left:8px;">
+                            ${parseFloat(p.prixVenteClient).toFixed(2)} DT
+                        </span>
+                        ${isCustom
+                                ? '<span class="badge badge-orange" style="margin-left:6px;">Personnalisé</span>'
+                                : '<span class="badge badge-blue" style="margin-left:6px;">Admin</span>'}
+                    </div>
+                    <button class="btn btn-danger btn-sm"
+                        data-id="${p.id}"
+                        data-type="${isCustom ? 'REVENDEUR' : 'ADMIN'}"
+                        data-name="${p.nomService.replace(/'/g, '')}"
+                        onclick="handleRemove(this)">
+                        ${isCustom ? 'Supprimer' : 'Retirer'}
+                    </button>
+                </div>`;
+                    }).join('')
+                    : '<div style="color:var(--text-muted);font-size:13px;padding:8px;">Aucun produit dans ce catalogue</div>';
+
+                const assignedIds = new Set(assigned.filter(p => p.creePar === 'ADMIN').map(p => p.id));
+                const available = allProduits.filter(p => p.creePar === 'ADMIN' && p.actif && !assignedIds.has(p.id));
+
+                document.getElementById('availableList').innerHTML = available.length
+                    ? available.map(p => `
+                <label style="display:flex;align-items:center;gap:10px;background:var(--surface2);
+                              border:1px solid var(--border);border-radius:6px;padding:9px 12px;cursor:pointer;">
+                    <input type="checkbox" value="${p.id}"
+                           style="width:16px;height:16px;accent-color:var(--brand);flex-shrink:0;">
+                    <div>
+                        <strong style="font-size:13px;">${p.nomService}</strong>
+                        <span style="color:var(--text-muted);font-size:12px;margin-left:8px;">
+                            ${parseFloat(p.prixVenteClient).toFixed(2)} DT
+                        </span>
+                        ${p.categorieService
+                            ? `<span class="badge badge-blue" style="margin-left:6px;">${p.categorieService}</span>`
+                            : ''}
+                    </div>
+                </label>`).join('')
+                    : '<div style="color:var(--text-muted);font-size:13px;padding:8px;">Tous les produits admin sont déjà assignés</div>';
+
+            }).catch(err => toast(err.message, 'error'));
+        }
+
+        function handleRemove(btn) {
+            const id = btn.getAttribute('data-id');
+            const type = btn.getAttribute('data-type');
+            const name = btn.getAttribute('data-name');
+            const isCustom = type === 'REVENDEUR';
+            const msg = isCustom
+                ? `Supprimer définitivement "${name}" ?`
+                : `Retirer "${name}" du catalogue ?`;
+            if (!confirm(msg)) return;
+            const endpoint = isCustom
+                ? `/api/produits/revendeur/${currentCatalogRevId}/remove-custom/${id}`
+                : `/api/produits/revendeur/${currentCatalogRevId}/remove-admin/${id}`;
+            api(endpoint, { method: 'DELETE' })
+                .then(() => { toast('Produit retiré'); loadCatalog(); })
+                .catch(err => toast(err.message, 'error'));
+        }
+
+        function assignSelected() {
+            const checkboxes = document.querySelectorAll('#availableList input[type=checkbox]:checked');
+            const ids = Array.from(checkboxes).map(c => parseInt(c.value));
+            if (!ids.length) { toast('Aucun produit sélectionné', 'error'); return; }
+            api(`/api/produits/revendeur/${currentCatalogRevId}/assign-multiple`, {
+                method: 'POST', body: JSON.stringify(ids)
+            }).then(() => {
+                toast(`${ids.length} produit(s) assigné(s) avec succès`);
+                loadCatalog();
+            }).catch(err => toast(err.message, 'error'));
         }
     </script>
 </body>

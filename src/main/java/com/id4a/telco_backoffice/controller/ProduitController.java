@@ -36,14 +36,20 @@ public class ProduitController {
         service.deactivate(id);
     }
 
+    @PutMapping("/{id}/reactivate")
+    public Produit reactivate(@PathVariable Long id) {
+        return service.reactivate(id);
+    }
+
     @DeleteMapping("/{id}/permanent")
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
 
-    @PutMapping("/{id}/reactivate")
-    public Produit reactivate(@PathVariable Long id) {
-        return service.reactivate(id);
+    // revendeur catalog endpoints
+    @GetMapping("/revendeur/{revendeurId}")
+    public List<Produit> getByRevendeur(@PathVariable Long revendeurId) {
+        return service.findByRevendeur(revendeurId);
     }
 
     @PostMapping("/revendeur/{revendeurId}")
@@ -51,8 +57,23 @@ public class ProduitController {
         return service.createByRevendeur(p, revendeurId);
     }
 
-    @GetMapping("/revendeur/{revendeurId}")
-    public List<Produit> getByRevendeur(@PathVariable Long revendeurId) {
-        return service.findByRevendeur(revendeurId);
+    @PostMapping("/revendeur/{revendeurId}/assign/{produitId}")
+    public void assign(@PathVariable Long revendeurId, @PathVariable Long produitId) {
+        service.assignProduit(revendeurId, produitId);
+    }
+
+    @PostMapping("/revendeur/{revendeurId}/assign-multiple")
+    public void assignMultiple(@PathVariable Long revendeurId, @RequestBody List<Long> produitIds) {
+        service.assignMultiple(revendeurId, produitIds);
+    }
+
+    @DeleteMapping("/revendeur/{revendeurId}/remove-admin/{produitId}")
+    public void removeAdmin(@PathVariable Long revendeurId, @PathVariable Long produitId) {
+        service.removeAdminProduit(revendeurId, produitId);
+    }
+
+    @DeleteMapping("/revendeur/{revendeurId}/remove-custom/{produitId}")
+    public void removeCustom(@PathVariable Long revendeurId, @PathVariable Long produitId) {
+        service.removeCustomProduit(revendeurId, produitId);
     }
 }

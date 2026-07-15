@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "revendeur")
@@ -49,4 +53,9 @@ public class Revendeur {
     public enum Statut {
         ACTIF, SUSPENDU
     }
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "revendeur_produit", joinColumns = @JoinColumn(name = "revendeur_id"), inverseJoinColumns = @JoinColumn(name = "produit_id"))
+    @JsonIgnore
+    private List<Produit> catalogue = new ArrayList<>();
 }
