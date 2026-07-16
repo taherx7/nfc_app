@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RevendeurRepository extends JpaRepository<Revendeur, Long> {
     Optional<Revendeur> findById(Long id);
+
+    Optional<Revendeur> findByEmail(String email);
 }
