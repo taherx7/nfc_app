@@ -33,6 +33,12 @@ public class OperationService {
     public Operation create(OperationRequest req) {
         Revendeur r = revendeurRepository.findById(req.getRevendeurId())
                 .orElseThrow(() -> new RuntimeException("Revendeur introuvable"));
+
+        if (r.getStatut() == Revendeur.Statut.SUSPENDU) {
+            throw new RuntimeException(
+                    "Compte suspendu — impossible d'effectuer une vente. Motif: " + r.getMotifSuspension());
+        }
+
         ClientFinal c = clientFinalRepository.findById(req.getClientFinalId())
                 .orElseThrow(() -> new RuntimeException("Client introuvable"));
 
