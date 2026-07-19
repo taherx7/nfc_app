@@ -76,4 +76,9 @@ public class ProduitController {
     public void removeCustom(@PathVariable Long revendeurId, @PathVariable Long produitId) {
         service.removeCustomProduit(revendeurId, produitId);
     }
+
+    @GetMapping("/revendeur/{revendeurId}/disponibles")
+    public List<Produit> getAvailableAdminProducts(@PathVariable Long revendeurId) {
+        return service.findAvailableAdminProducts(revendeurId);
+    }
 }

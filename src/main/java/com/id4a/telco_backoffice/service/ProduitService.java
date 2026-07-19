@@ -45,6 +45,17 @@ public class ProduitService {
         return saved;
     }
 
+    public List<Produit> findAvailableAdminProducts(Long revendeurId) {
+        Revendeur r = revendeurRepository.findById(revendeurId)
+                .orElseThrow(() -> new RuntimeException("Revendeur introuvable"));
+        List<Long> assignedIds = r.getCatalogue().stream().map(Produit::getId).toList();
+        return repository.findAll().stream()
+                .filter(p -> p.getCreePar() == Produit.CreePar.ADMIN)
+                .filter(Produit::getActif)
+                .filter(p -> !assignedIds.contains(p.getId()))
+                .toList();
+    }
+
     public List<Produit> findAll() {
         return repository.findAll();
     }
