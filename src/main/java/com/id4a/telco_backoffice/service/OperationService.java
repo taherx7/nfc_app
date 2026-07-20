@@ -47,7 +47,8 @@ public class OperationService {
         op.setClientFinal(c);
 
         List<DetailOperation> details = new ArrayList<>();
-        BigDecimal total = BigDecimal.ZERO;
+        BigDecimal totalVente = BigDecimal.ZERO;
+        BigDecimal coutAchat = BigDecimal.ZERO;
 
         for (OperationRequest.LigneProduit ligne : req.getProduits()) {
             Produit p = produitRepository.findById(ligne.getProduitId())
@@ -60,10 +61,21 @@ public class OperationService {
             d.setPrixUnitaire(p.getPrixVenteClient());
             details.add(d);
 
-            total = total.add(p.getPrixVenteClient().multiply(BigDecimal.valueOf(ligne.getQuantite())));
+            totalVente = totalVente.add(p.getPrixVenteClient().multiply(BigDecimal.valueOf(ligne.getQuantite())));
+            coutAchat = coutAchat.add(p.getPrixAchatRevendeur().multiply(BigDecimal.valueOf(ligne.getQuantite())));
         }
 
-        op.setMontantTotal(total);
+        BigDecimal nouveauSolde = r.getSoldeUtilise().add(coutAchat);
+        if (r.getPlafondAutorise() != null && r.getPlafondAutorise().compareTo(BigDecimal.ZERO) > 0
+                && nouveauSolde.compareTo(r.getPlafondAutorise()) > 0) {
+            throw new RuntimeException("Plafond dépassé — solde actuel: " + r.getSoldeUtilise()
+                    + " DT, plafond: " + r.getPlafondAutorise() + " DT");
+        }
+
+        r.setSoldeUtilise(nouveauSolde);
+        revendeurRepository.save(r);
+
+        op.setMontantTotal(totalVente);
         op.setDetails(details);
 
         return operationRepository.save(op);

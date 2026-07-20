@@ -46,15 +46,14 @@ public class ProduitController {
         service.delete(id);
     }
 
-    // revendeur catalog endpoints
     @GetMapping("/revendeur/{revendeurId}")
     public List<Produit> getByRevendeur(@PathVariable Long revendeurId) {
         return service.findByRevendeur(revendeurId);
     }
 
-    @PostMapping("/revendeur/{revendeurId}")
-    public Produit createByRevendeur(@PathVariable Long revendeurId, @RequestBody Produit p) {
-        return service.createByRevendeur(p, revendeurId);
+    @GetMapping("/revendeur/{revendeurId}/disponibles")
+    public List<Produit> getAvailableAdminProducts(@PathVariable Long revendeurId) {
+        return service.findAvailableAdminProducts(revendeurId);
     }
 
     @PostMapping("/revendeur/{revendeurId}/assign/{produitId}")
@@ -67,18 +66,8 @@ public class ProduitController {
         service.assignMultiple(revendeurId, produitIds);
     }
 
-    @DeleteMapping("/revendeur/{revendeurId}/remove-admin/{produitId}")
-    public void removeAdmin(@PathVariable Long revendeurId, @PathVariable Long produitId) {
-        service.removeAdminProduit(revendeurId, produitId);
-    }
-
-    @DeleteMapping("/revendeur/{revendeurId}/remove-custom/{produitId}")
-    public void removeCustom(@PathVariable Long revendeurId, @PathVariable Long produitId) {
-        service.removeCustomProduit(revendeurId, produitId);
-    }
-
-    @GetMapping("/revendeur/{revendeurId}/disponibles")
-    public List<Produit> getAvailableAdminProducts(@PathVariable Long revendeurId) {
-        return service.findAvailableAdminProducts(revendeurId);
+    @DeleteMapping("/revendeur/{revendeurId}/remove/{produitId}")
+    public void remove(@PathVariable Long revendeurId, @PathVariable Long produitId) {
+        service.removeFromCatalog(revendeurId, produitId);
     }
 }
