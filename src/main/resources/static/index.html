@@ -696,6 +696,28 @@
             </div>
         </div>
     </div>
+    <div class="modal-overlay" id="rechargeModal">
+        <div class="modal">
+            <h3>Recharger le plafond</h3>
+            <p id="rechargeInfo" style="color:var(--text-muted);font-size:13px;margin-bottom:12px;"></p>
+            <input id="rechargeMontant" type="number" step="0.01" placeholder="Montant reçu (DT)">
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeRechargeModal()">Annuler</button>
+                <button class="btn btn-accent" onclick="confirmRecharge()">Recharger</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="plafondModal">
+        <div class="modal">
+            <h3>Modifier le plafond</h3>
+            <p id="plafondInfo" style="color:var(--text-muted);font-size:13px;margin-bottom:12px;"></p>
+            <input id="plafondNouveauMontant" type="number" step="0.01" placeholder="Nouveau plafond (DT)">
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closePlafondModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="confirmPlafondUpdate()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
 
     <!-- APP -->
     <div id="app">
@@ -849,7 +871,7 @@
                                         <th>Téléphone</th>
                                         <th>Ville</th>
                                         <th>Catégorie</th>
-                                        <th>Plafond</th>
+                                        <th>Plafond / Solde</th>
                                         <th>Statut</th>
                                         <th>Actions</th>
                                     </tr>
@@ -931,12 +953,7 @@
                                     <option value="true">Actifs</option>
                                     <option value="false">Désactivés</option>
                                 </select>
-                                <select id="filterCreePar" onchange="renderProduits()"
-                                    style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;">
-                                    <option value="">Toutes origines</option>
-                                    <option value="ADMIN">Créés par admin</option>
-                                    <option value="REVENDEUR">Créés par revendeur</option>
-                                </select>
+
                                 <input id="filterCat" placeholder="Filtrer par catégorie" onkeyup="renderProduits()"
                                     style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;">
                             </div>
@@ -1210,7 +1227,16 @@
         <td>${r.telephone}</td>
         <td>${r.ville || '<span style="color:var(--text-muted)">—</span>'}</td>
         <td>${r.categorie || '<span style="color:var(--text-muted)">—</span>'}</td>
-        <td>${r.plafondAutorise != null ? parseFloat(r.plafondAutorise).toFixed(2) + ' DT' : '—'}</td>
+        <td>
+  <div style="font-size:12px;">
+    <strong>${parseFloat(r.soldeUtilise || 0).toFixed(2)} DT</strong> / ${parseFloat(r.plafondAutorise || 0).toFixed(2)} DT
+  </div>
+  <div style="width:100%;background:var(--border);border-radius:4px;height:5px;margin-top:3px;">
+    <div style="width:${r.plafondAutorise > 0 ? Math.min(100, (r.soldeUtilise / r.plafondAutorise) * 100) : 0}%;
+                background:${r.plafondAutorise > 0 && (r.soldeUtilise / r.plafondAutorise) > 0.8 ? 'var(--danger)' : 'var(--accent)'};
+                height:100%;border-radius:4px;"></div>
+  </div>
+</td>
         <td>${r.statut === 'ACTIF'
                         ? `<span class="badge badge-green">Actif</span>`
                         : `<span class="badge badge-red">Suspendu</span><br><small style="color:var(--text-muted)">${r.motifSuspension || ''}</small>`}</td>
@@ -1220,6 +1246,8 @@
                         : `<button class="btn btn-accent btn-sm" onclick="reactivateRevendeur(${r.id})">Réactiver</button>`}
           <button class="btn btn-danger btn-sm" onclick="deleteRevendeur(${r.id}, '${r.nom} ${r.prenom}')">Supprimer</button>
           <button class="btn btn-accent btn-sm" onclick="openCatalog(${r.id}, '${r.nom} ${r.prenom}')">📋 Catalogue</button>
+          <button class="btn btn-accent btn-sm" onclick="openRecharge(${r.id}, '${r.nom} ${r.prenom}', ${r.soldeUtilise || 0})">💰 Recharger</button>
+         <button class="btn btn-ghost btn-sm" onclick="openEditPlafond(${r.id}, '${r.nom} ${r.prenom}', ${r.plafondAutorise || 0})">✎ Modifier plafond</button>
         </div></td>
       </tr>`).join('')
                 : '<tr class="empty-row"><td colspan="9">Aucun revendeur trouvé</td></tr>';
@@ -1272,11 +1300,9 @@
         function renderProduits() {
             const actifFilter = document.getElementById('filterActif').value;
             const catFilter = document.getElementById('filterCat').value.toLowerCase();
-            const creeParFilter = document.getElementById('filterCreePar').value;
             const filtered = allProduits.filter(p =>
                 (actifFilter === '' || String(p.actif) === actifFilter) &&
-                (!catFilter || (p.categorieService || '').toLowerCase().includes(catFilter)) &&
-                (!creeParFilter || p.creePar === creeParFilter)
+                (!catFilter || (p.categorieService || '').toLowerCase().includes(catFilter))
             );
 
             document.getElementById('prodTableBody').innerHTML = filtered.length
@@ -1290,9 +1316,6 @@
           <td><strong>${parseFloat(p.prixVenteClient).toFixed(2)} DT</strong></td>
           <td style="color:var(--green);font-weight:600">+${marge} DT</td>
           <td>${p.actif ? '<span class="badge badge-green">Actif</span>' : '<span class="badge badge-gray">Désactivé</span>'}</td>
-          <td>${p.creePar === 'REVENDEUR'
-                            ? `<span class="badge badge-orange">Revendeur</span><br><small style="color:var(--text-muted)">${p.revendeurCreateur ? p.revendeurCreateur.nom + ' ' + p.revendeurCreateur.prenom : ''}</small>`
-                            : `<span class="badge badge-blue">Admin</span>`}</td>
           <td><div class="td-actions">
             ${p.actif
                             ? `<button class="btn btn-warn btn-sm" onclick="deactivateProduit(${p.id})">Désactiver</button>`
@@ -1301,7 +1324,7 @@
           </div></td>
         </tr>`;
                 }).join('')
-                : '<tr class="empty-row"><td colspan="8">Aucun produit trouvé</td></tr>';
+                : '<tr class="empty-row"><td colspan="7">Aucun produit trouvé</td></tr>';
         }
 
         function createProduit(e) {
@@ -1432,9 +1455,7 @@
                 catalogAssigned = assigned;
 
                 document.getElementById('assignedList').innerHTML = assigned.length
-                    ? assigned.map(p => {
-                        const isCustom = p.creePar === 'REVENDEUR';
-                        return `
+                    ? assigned.map(p => `
                 <div style="display:flex;align-items:center;justify-content:space-between;
                             background:var(--surface2);border:1px solid var(--border);
                             border-radius:6px;padding:9px 12px;">
@@ -1443,23 +1464,18 @@
                         <span style="color:var(--text-muted);font-size:12px;margin-left:8px;">
                             ${parseFloat(p.prixVenteClient).toFixed(2)} DT
                         </span>
-                        ${isCustom
-                                ? '<span class="badge badge-orange" style="margin-left:6px;">Personnalisé</span>'
-                                : '<span class="badge badge-blue" style="margin-left:6px;">Admin</span>'}
                     </div>
                     <button class="btn btn-danger btn-sm"
                         data-id="${p.id}"
-                        data-type="${isCustom ? 'REVENDEUR' : 'ADMIN'}"
                         data-name="${p.nomService.replace(/'/g, '')}"
                         onclick="handleRemove(this)">
-                        ${isCustom ? 'Supprimer' : 'Retirer'}
+                        Retirer
                     </button>
-                </div>`;
-                    }).join('')
+                </div>`).join('')
                     : '<div style="color:var(--text-muted);font-size:13px;padding:8px;">Aucun produit dans ce catalogue</div>';
 
-                const assignedIds = new Set(assigned.filter(p => p.creePar === 'ADMIN').map(p => p.id));
-                const available = allProduits.filter(p => p.creePar === 'ADMIN' && p.actif && !assignedIds.has(p.id));
+                const assignedIds = new Set(assigned.map(p => p.id));
+                const available = allProduits.filter(p => p.actif && !assignedIds.has(p.id));
 
                 document.getElementById('availableList').innerHTML = available.length
                     ? available.map(p => `
@@ -1484,17 +1500,9 @@
 
         function handleRemove(btn) {
             const id = btn.getAttribute('data-id');
-            const type = btn.getAttribute('data-type');
             const name = btn.getAttribute('data-name');
-            const isCustom = type === 'REVENDEUR';
-            const msg = isCustom
-                ? `Supprimer définitivement "${name}" ?`
-                : `Retirer "${name}" du catalogue ?`;
-            if (!confirm(msg)) return;
-            const endpoint = isCustom
-                ? `/api/produits/revendeur/${currentCatalogRevId}/remove-custom/${id}`
-                : `/api/produits/revendeur/${currentCatalogRevId}/remove-admin/${id}`;
-            api(endpoint, { method: 'DELETE' })
+            if (!confirm(`Retirer "${name}" du catalogue ?`)) return;
+            api(`/api/produits/revendeur/${currentCatalogRevId}/remove/${id}`, { method: 'DELETE' })
                 .then(() => { toast('Produit retiré'); loadCatalog(); })
                 .catch(err => toast(err.message, 'error'));
         }
@@ -1509,6 +1517,48 @@
                 toast(`${ids.length} produit(s) assigné(s) avec succès`);
                 loadCatalog();
             }).catch(err => toast(err.message, 'error'));
+        }
+        let rechargeTargetId = null;
+
+        function openRecharge(id, name, soldeActuel) {
+            rechargeTargetId = id;
+            document.getElementById('rechargeInfo').innerText = `${name} — solde actuel dû: ${parseFloat(soldeActuel).toFixed(2)} DT`;
+            document.getElementById('rechargeMontant').value = '';
+            document.getElementById('rechargeModal').classList.add('open');
+        }
+        function closeRechargeModal() {
+            document.getElementById('rechargeModal').classList.remove('open');
+            rechargeTargetId = null;
+        }
+        function confirmRecharge() {
+            const montant = parseFloat(document.getElementById('rechargeMontant').value);
+            if (!montant || montant <= 0) { toast('Montant invalide', 'error'); return; }
+            api(`/api/revendeurs/${rechargeTargetId}/recharger?montant=${montant}`, { method: 'PUT' })
+                .then(updated => {
+                    allRevendeurs = allRevendeurs.map(r => r.id === updated.id ? updated : r);
+                    closeRechargeModal(); renderRevendeurs(); toast('Plafond rechargé avec succès');
+                }).catch(err => toast(err.message, 'error'));
+        }
+        let plafondTargetId = null;
+
+        function openEditPlafond(id, name, plafondActuel) {
+            plafondTargetId = id;
+            document.getElementById('plafondInfo').innerText = `${name} — plafond actuel: ${parseFloat(plafondActuel).toFixed(2)} DT`;
+            document.getElementById('plafondNouveauMontant').value = plafondActuel;
+            document.getElementById('plafondModal').classList.add('open');
+        }
+        function closePlafondModal() {
+            document.getElementById('plafondModal').classList.remove('open');
+            plafondTargetId = null;
+        }
+        function confirmPlafondUpdate() {
+            const montant = parseFloat(document.getElementById('plafondNouveauMontant').value);
+            if (isNaN(montant) || montant < 0) { toast('Montant invalide', 'error'); return; }
+            api(`/api/revendeurs/${plafondTargetId}/plafond?nouveauPlafond=${montant}`, { method: 'PUT' })
+                .then(updated => {
+                    allRevendeurs = allRevendeurs.map(r => r.id === updated.id ? updated : r);
+                    closePlafondModal(); renderRevendeurs(); toast('Plafond mis à jour');
+                }).catch(err => toast(err.message, 'error'));
         }
     </script>
 </body>

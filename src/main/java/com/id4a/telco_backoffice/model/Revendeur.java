@@ -49,6 +49,8 @@ public class Revendeur {
 
     @Column(name = "date_creation", updatable = false)
     private LocalDateTime dateCreation = LocalDateTime.now();
+    @Column(name = "solde_utilise")
+    private BigDecimal soldeUtilise = BigDecimal.ZERO;
 
     public enum Statut {
         ACTIF, SUSPENDU
