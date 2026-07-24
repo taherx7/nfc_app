@@ -925,6 +925,13 @@
                         <div class="section-body">
                             <form onsubmit="createProduit(event)">
                                 <div class="form-grid">
+                                    <div class="form-group"><label>Opérateur</label>
+                                        <select id="p_operateur" required>
+                                            <option value="ORANGE">Orange</option>
+                                            <option value="TT">TT</option>
+                                            <option value="OOREDOO">Ooredoo</option>
+                                        </select>
+                                    </div>
                                     <div class="form-group"><label>Nom du service</label><input id="p_nom"
                                             placeholder="Recharge Orange 10DT" required></div>
                                     <div class="form-group"><label>Catégorie</label><input id="p_cat"
@@ -963,6 +970,7 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
+                                        <th>Opérateur</th>
                                         <th>Nom du service</th>
                                         <th>Catégorie</th>
                                         <th>Prix achat</th>
@@ -1245,7 +1253,6 @@
                         ? `<button class="btn btn-warn btn-sm" onclick="openSuspend(${r.id})">Suspendre</button>`
                         : `<button class="btn btn-accent btn-sm" onclick="reactivateRevendeur(${r.id})">Réactiver</button>`}
           <button class="btn btn-danger btn-sm" onclick="deleteRevendeur(${r.id}, '${r.nom} ${r.prenom}')">Supprimer</button>
-          <button class="btn btn-accent btn-sm" onclick="openCatalog(${r.id}, '${r.nom} ${r.prenom}')">📋 Catalogue</button>
           <button class="btn btn-accent btn-sm" onclick="openRecharge(${r.id}, '${r.nom} ${r.prenom}', ${r.soldeUtilise || 0})">💰 Recharger</button>
          <button class="btn btn-ghost btn-sm" onclick="openEditPlafond(${r.id}, '${r.nom} ${r.prenom}', ${r.plafondAutorise || 0})">✎ Modifier plafond</button>
         </div></td>
@@ -1310,6 +1317,7 @@
                     const marge = (parseFloat(p.prixVenteClient) - parseFloat(p.prixAchatRevendeur)).toFixed(2);
                     return `<tr>
           <td>#${p.id}</td>
+          <td><span class="badge badge-blue">${p.operateur}</span></td>
           <td><strong>${p.nomService}</strong>${p.description ? `<br><small style="color:var(--text-muted)">${p.description}</small>` : ''}</td>
           <td>${p.categorieService ? `<span class="badge badge-blue">${p.categorieService}</span>` : '—'}</td>
           <td>${parseFloat(p.prixAchatRevendeur).toFixed(2)} DT</td>
@@ -1324,12 +1332,13 @@
           </div></td>
         </tr>`;
                 }).join('')
-                : '<tr class="empty-row"><td colspan="7">Aucun produit trouvé</td></tr>';
+                : '<tr class="empty-row"><td colspan="8">Aucun produit trouvé</td></tr>';
         }
 
         function createProduit(e) {
             e.preventDefault();
             const body = {
+                operateur: p_operateur.value,
                 nomService: p_nom.value.trim(), categorieService: p_cat.value.trim(),
                 description: p_desc.value.trim(),
                 prixAchatRevendeur: parseFloat(p_achat.value),
@@ -1433,91 +1442,7 @@
             if (!str) return '—';
             return new Date(str).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         }
-        // ── CATALOG MANAGEMENT ──
-        let currentCatalogRevId = null;
-        let catalogAssigned = [];
 
-        function openCatalog(revId, revName) {
-            currentCatalogRevId = revId;
-            document.getElementById('catalogRevName').innerText = revName;
-            document.getElementById('catalogSection').style.display = 'block';
-            document.getElementById('catalogSection').scrollIntoView({ behavior: 'smooth' });
-            loadCatalog();
-        }
-
-        function closeCatalog() {
-            document.getElementById('catalogSection').style.display = 'none';
-            currentCatalogRevId = null;
-        }
-
-        function loadCatalog() {
-            api(`/api/produits/revendeur/${currentCatalogRevId}`).then(assigned => {
-                catalogAssigned = assigned;
-
-                document.getElementById('assignedList').innerHTML = assigned.length
-                    ? assigned.map(p => `
-                <div style="display:flex;align-items:center;justify-content:space-between;
-                            background:var(--surface2);border:1px solid var(--border);
-                            border-radius:6px;padding:9px 12px;">
-                    <div>
-                        <strong style="font-size:13px;">${p.nomService}</strong>
-                        <span style="color:var(--text-muted);font-size:12px;margin-left:8px;">
-                            ${parseFloat(p.prixVenteClient).toFixed(2)} DT
-                        </span>
-                    </div>
-                    <button class="btn btn-danger btn-sm"
-                        data-id="${p.id}"
-                        data-name="${p.nomService.replace(/'/g, '')}"
-                        onclick="handleRemove(this)">
-                        Retirer
-                    </button>
-                </div>`).join('')
-                    : '<div style="color:var(--text-muted);font-size:13px;padding:8px;">Aucun produit dans ce catalogue</div>';
-
-                const assignedIds = new Set(assigned.map(p => p.id));
-                const available = allProduits.filter(p => p.actif && !assignedIds.has(p.id));
-
-                document.getElementById('availableList').innerHTML = available.length
-                    ? available.map(p => `
-                <label style="display:flex;align-items:center;gap:10px;background:var(--surface2);
-                              border:1px solid var(--border);border-radius:6px;padding:9px 12px;cursor:pointer;">
-                    <input type="checkbox" value="${p.id}"
-                           style="width:16px;height:16px;accent-color:var(--brand);flex-shrink:0;">
-                    <div>
-                        <strong style="font-size:13px;">${p.nomService}</strong>
-                        <span style="color:var(--text-muted);font-size:12px;margin-left:8px;">
-                            ${parseFloat(p.prixVenteClient).toFixed(2)} DT
-                        </span>
-                        ${p.categorieService
-                            ? `<span class="badge badge-blue" style="margin-left:6px;">${p.categorieService}</span>`
-                            : ''}
-                    </div>
-                </label>`).join('')
-                    : '<div style="color:var(--text-muted);font-size:13px;padding:8px;">Tous les produits admin sont déjà assignés</div>';
-
-            }).catch(err => toast(err.message, 'error'));
-        }
-
-        function handleRemove(btn) {
-            const id = btn.getAttribute('data-id');
-            const name = btn.getAttribute('data-name');
-            if (!confirm(`Retirer "${name}" du catalogue ?`)) return;
-            api(`/api/produits/revendeur/${currentCatalogRevId}/remove/${id}`, { method: 'DELETE' })
-                .then(() => { toast('Produit retiré'); loadCatalog(); })
-                .catch(err => toast(err.message, 'error'));
-        }
-
-        function assignSelected() {
-            const checkboxes = document.querySelectorAll('#availableList input[type=checkbox]:checked');
-            const ids = Array.from(checkboxes).map(c => parseInt(c.value));
-            if (!ids.length) { toast('Aucun produit sélectionné', 'error'); return; }
-            api(`/api/produits/revendeur/${currentCatalogRevId}/assign-multiple`, {
-                method: 'POST', body: JSON.stringify(ids)
-            }).then(() => {
-                toast(`${ids.length} produit(s) assigné(s) avec succès`);
-                loadCatalog();
-            }).catch(err => toast(err.message, 'error'));
-        }
         let rechargeTargetId = null;
 
         function openRecharge(id, name, soldeActuel) {
