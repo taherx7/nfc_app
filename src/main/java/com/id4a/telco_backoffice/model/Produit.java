@@ -33,7 +33,11 @@ public class Produit {
     @Column(name = "date_creation", updatable = false)
     private LocalDateTime dateCreation = LocalDateTime.now();
 
-    public enum CreePar {
-        ADMIN, REVENDEUR
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Operateur operateur;
+
+    public enum Operateur {
+        ORANGE, TT, OOREDOO
     }
 }

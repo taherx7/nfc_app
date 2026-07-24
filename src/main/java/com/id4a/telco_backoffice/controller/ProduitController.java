@@ -26,6 +26,11 @@ public class ProduitController {
         return service.findAll();
     }
 
+    @GetMapping("/operateur/{operateur}")
+    public List<Produit> getByOperateur(@PathVariable Produit.Operateur operateur) {
+        return service.findByOperateur(operateur);
+    }
+
     @PutMapping("/{id}")
     public Produit update(@PathVariable Long id, @RequestBody Produit p) {
         return service.update(id, p);
@@ -44,30 +49,5 @@ public class ProduitController {
     @DeleteMapping("/{id}/permanent")
     public void delete(@PathVariable Long id) {
         service.delete(id);
-    }
-
-    @GetMapping("/revendeur/{revendeurId}")
-    public List<Produit> getByRevendeur(@PathVariable Long revendeurId) {
-        return service.findByRevendeur(revendeurId);
-    }
-
-    @GetMapping("/revendeur/{revendeurId}/disponibles")
-    public List<Produit> getAvailableAdminProducts(@PathVariable Long revendeurId) {
-        return service.findAvailableAdminProducts(revendeurId);
-    }
-
-    @PostMapping("/revendeur/{revendeurId}/assign/{produitId}")
-    public void assign(@PathVariable Long revendeurId, @PathVariable Long produitId) {
-        service.assignProduit(revendeurId, produitId);
-    }
-
-    @PostMapping("/revendeur/{revendeurId}/assign-multiple")
-    public void assignMultiple(@PathVariable Long revendeurId, @RequestBody List<Long> produitIds) {
-        service.assignMultiple(revendeurId, produitIds);
-    }
-
-    @DeleteMapping("/revendeur/{revendeurId}/remove/{produitId}")
-    public void remove(@PathVariable Long revendeurId, @PathVariable Long produitId) {
-        service.removeFromCatalog(revendeurId, produitId);
     }
 }
