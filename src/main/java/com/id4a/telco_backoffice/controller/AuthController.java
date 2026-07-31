@@ -25,9 +25,9 @@ public class AuthController {
 
     @PostMapping("/revendeur/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
-        Optional<Revendeur> opt = revendeurRepository.findByEmail(req.getEmail());
+        Optional<Revendeur> opt = revendeurRepository.findByTelephone(req.getTelephone());
         if (opt.isEmpty())
-            return ResponseEntity.status(401).body(java.util.Map.of("error", "Email introuvable"));
+            return ResponseEntity.status(401).body(java.util.Map.of("error", "Numéro introuvable"));
 
         Revendeur r = opt.get();
         if (!passwordEncoder.matches(req.getMotDePasse(), r.getMotDePasse()))
@@ -37,9 +37,17 @@ public class AuthController {
             return ResponseEntity.status(403)
                     .body(java.util.Map.of("error", "Compte suspendu: " + r.getMotifSuspension()));
 
-        // simple token: Base64(email:motDePasse) — good enough for a demo
+        // device verification
+        if (r.getDeviceId() == null) {
+            r.setDeviceId(req.getDeviceId());
+            revendeurRepository.save(r);
+        } else if (!r.getDeviceId().equals(req.getDeviceId())) {
+            return ResponseEntity.status(403)
+                    .body(java.util.Map.of("error", "Appareil non reconnu — contactez l'administrateur"));
+        }
+
         String token = Base64.getEncoder().encodeToString(
-                (req.getEmail() + ":" + req.getMotDePasse()).getBytes());
-        return ResponseEntity.ok(new LoginResponse(r.getId(), r.getNom(), r.getPrenom(), r.getEmail(), token));
+                (req.getTelephone() + ":" + req.getMotDePasse()).getBytes());
+        return ResponseEntity.ok(new LoginResponse(r.getId(), r.getNom(), r.getPrenom(), r.getTelephone(), token));
     }
 }

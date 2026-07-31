@@ -31,10 +31,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                     .build();
         }
 
-        Optional<Revendeur> revendeur = revendeurRepository.findByEmail(username);
+        Optional<Revendeur> revendeur = revendeurRepository.findByTelephone(username);
         if (revendeur.isPresent()) {
             return User.builder()
-                    .username(revendeur.get().getEmail())
+                    .username(revendeur.get().getTelephone())
                     .password(revendeur.get().getMotDePasse())
                     .roles("REVENDEUR")
                     .build();

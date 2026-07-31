@@ -73,4 +73,11 @@ public class RevendeurService {
                 .orElseThrow(() -> new RuntimeException("Revendeur introuvable"));
     }
 
+    public Revendeur resetDevice(Long id) {
+        Revendeur r = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Revendeur introuvable"));
+        r.setDeviceId(null);
+        return repository.save(r);
+    }
+
 }

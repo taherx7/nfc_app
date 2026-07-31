@@ -1255,6 +1255,7 @@
           <button class="btn btn-danger btn-sm" onclick="deleteRevendeur(${r.id}, '${r.nom} ${r.prenom}')">Supprimer</button>
           <button class="btn btn-accent btn-sm" onclick="openRecharge(${r.id}, '${r.nom} ${r.prenom}', ${r.soldeUtilise || 0})">💰 Recharger</button>
          <button class="btn btn-ghost btn-sm" onclick="openEditPlafond(${r.id}, '${r.nom} ${r.prenom}', ${r.plafondAutorise || 0})">✎ Modifier plafond</button>
+         <button class="btn btn-ghost btn-sm" onclick="resetDevice(${r.id}, '${r.nom} ${r.prenom}')">📱 Réinitialiser appareil</button>
         </div></td>
       </tr>`).join('')
                 : '<tr class="empty-row"><td colspan="9">Aucun revendeur trouvé</td></tr>';
@@ -1484,6 +1485,12 @@
                     allRevendeurs = allRevendeurs.map(r => r.id === updated.id ? updated : r);
                     closePlafondModal(); renderRevendeurs(); toast('Plafond mis à jour');
                 }).catch(err => toast(err.message, 'error'));
+        }
+        function resetDevice(id, name) {
+            if (!confirm(`Réinitialiser l'appareil enregistré pour "${name}" ? Il pourra se connecter depuis un nouveau téléphone.`)) return;
+            api(`/api/revendeurs/${id}/reset-device`, { method: 'PUT' })
+                .then(() => toast('Appareil réinitialisé'))
+                .catch(err => toast(err.message, 'error'));
         }
     </script>
 </body>

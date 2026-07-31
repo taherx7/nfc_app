@@ -1,15 +1,16 @@
 package com.id4a.telco_backoffice.dto;
 
 public class LoginRequest {
-    private String email;
+    private String telephone;
     private String motDePasse;
+    private String deviceId;
 
-    public String getEmail() {
-        return email;
+    public String getTelephone() {
+        return telephone;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
     }
 
     public String getMotDePasse() {
@@ -18,5 +19,13 @@ public class LoginRequest {
 
     public void setMotDePasse(String motDePasse) {
         this.motDePasse = motDePasse;
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 }

@@ -52,4 +52,7 @@ public class Revendeur {
         ACTIF, SUSPENDU
     }
 
+    @Column(name = "device_id")
+    private String deviceId;
+
 }
