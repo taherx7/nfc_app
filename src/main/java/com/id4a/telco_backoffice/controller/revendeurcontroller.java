@@ -56,4 +56,9 @@ public class revendeurcontroller {
     public Revendeur updatePlafond(@PathVariable Long id, @RequestParam BigDecimal nouveauPlafond) {
         return service.updatePlafond(id, nouveauPlafond);
     }
+
+    @PutMapping("/{id}/reset-device")
+    public Revendeur resetDevice(@PathVariable Long id) {
+        return service.resetDevice(id);
+    }
 }
