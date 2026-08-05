@@ -39,4 +39,10 @@ public class OperationController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFin) {
         return service.filter(ville, operateur, revendeurId, dateDebut, dateFin);
     }
+
+    // OperationController.java — add this endpoint
+    @GetMapping("/client/{clientFinalId}")
+    public List<Operation> findByClient(@PathVariable Long clientFinalId) {
+        return service.getByClientId(clientFinalId);
+    }
 }
