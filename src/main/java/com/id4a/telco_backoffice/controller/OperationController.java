@@ -48,7 +48,9 @@ public class OperationController {
 
     // Public endpoint for consumer app — no auth needed, identified by NFC code
     @GetMapping("/nfc/{codeNfc}")
-    public List<Operation> findByNfcCode(@PathVariable String codeNfc) {
-        return service.getByNfcCode(codeNfc);
+    public List<com.id4a.telco_backoffice.dto.OperationHistoryDto> findByNfcCode(@PathVariable String codeNfc) {
+        return service.getByNfcCode(codeNfc).stream()
+                .map(com.id4a.telco_backoffice.dto.OperationHistoryDto::fromEntity)
+                .toList();
     }
 }
