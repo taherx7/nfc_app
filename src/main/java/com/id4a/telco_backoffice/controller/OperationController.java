@@ -45,4 +45,10 @@ public class OperationController {
     public List<Operation> findByClient(@PathVariable Long clientFinalId) {
         return service.getByClientId(clientFinalId);
     }
+
+    // Public endpoint for consumer app — no auth needed, identified by NFC code
+    @GetMapping("/nfc/{codeNfc}")
+    public List<Operation> findByNfcCode(@PathVariable String codeNfc) {
+        return service.getByNfcCode(codeNfc);
+    }
 }
