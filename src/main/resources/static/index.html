@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ID4A Telco — Backoffice</title>
+    <title>ID4A AirTime — Backoffice</title>
     <style>
         *,
         *::before,
@@ -15,8 +15,8 @@
         }
 
         :root {
-            --brand: #1B1F6B;
-            --brand-light: #2D3491;
+            --brand: #D63B3B;
+            --brand-light: #E85555;
             --accent: #00C0A3;
             --accent-dark: #009E87;
             --danger: #D63B3B;
@@ -30,7 +30,7 @@
             --text-muted: #6B7080;
             --green: #1DB87A;
             --radius: 8px;
-            --shadow: 0 2px 8px rgba(27, 31, 107, 0.09);
+            --shadow: 0 2px 8px rgba(214, 59, 59, 0.09);
         }
 
         body {
@@ -45,7 +45,7 @@
         #loginOverlay {
             position: fixed;
             inset: 0;
-            background: linear-gradient(135deg, var(--brand) 0%, #0E1152 100%);
+            background: linear-gradient(135deg, var(--brand) 0%, #7A1C1C 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -673,7 +673,7 @@
     <!-- LOGIN -->
     <div id="loginOverlay">
         <div class="login-card">
-            <div class="logo">ID4A Telco</div>
+            <div class="logo">ID4A AirTime</div>
             <div class="sub">Accès réservé aux administrateurs</div>
             <label>Identifiant</label>
             <input id="loginUser" placeholder="admin" autocomplete="username">
@@ -723,7 +723,7 @@
     <div id="app">
         <div class="sidebar">
             <div class="sidebar-logo">
-                <span>ID4A Telco</span>
+                <span>ID4A AirTime</span>
                 <small>Backoffice Admin</small>
             </div>
             <nav>
@@ -832,11 +832,51 @@
                                     <div class="form-group"><label>Téléphone</label><input id="r_tel"
                                             placeholder="20123456" required></div>
                                     <div class="form-group"><label>Mot de passe</label><input id="r_pass"
-                                            type="password" placeholder="••••••••" required></div>
-                                    <div class="form-group"><label>Ville</label><input id="r_ville" placeholder="Tunis">
+                                            type="text" placeholder="Mot de passe visible" required></div>
+                                    <div class="form-group"><label>Ville</label>
+                                        <select id="r_ville">
+                                            <option value="">— Sélectionner —</option>
+                                            <option>Tunis</option>
+                                            <option>Ariana</option>
+                                            <option>Ben Arous</option>
+                                            <option>Manouba</option>
+                                            <option>Nabeul</option>
+                                            <option>Zaghouan</option>
+                                            <option>Bizerte</option>
+                                            <option>Béja</option>
+                                            <option>Jendouba</option>
+                                            <option>Le Kef</option>
+                                            <option>Siliana</option>
+                                            <option>Sousse</option>
+                                            <option>Monastir</option>
+                                            <option>Mahdia</option>
+                                            <option>Sfax</option>
+                                            <option>Kairouan</option>
+                                            <option>Kasserine</option>
+                                            <option>Sidi Bouzid</option>
+                                            <option>Gabès</option>
+                                            <option>Médenine</option>
+                                            <option>Tataouine</option>
+                                            <option>Gafsa</option>
+                                            <option>Tozeur</option>
+                                            <option>Kébili</option>
+                                        </select>
                                     </div>
-                                    <div class="form-group"><label>Catégorie</label><input id="r_cat"
-                                            placeholder="Premium"></div>
+                                    <div class="form-group"><label>Catégorie</label>
+                                        <select id="r_cat">
+                                            <option value="">— Sélectionner —</option>
+                                            <option>Magasin Général</option>
+                                            <option>7anout</option>
+                                            <option>7amas</option>
+                                            <option>Boutique</option>
+                                            <option>Épicerie</option>
+                                            <option>Pharmacie</option>
+                                            <option>Librairie</option>
+                                            <option>Kiosque</option>
+                                            <option>Tabac / Presse</option>
+                                            <option>Autre</option>
+                                        </select>
+                                    </div>
                                     <div class="form-group"><label>Plafond (DT)</label><input id="r_plafond"
                                             type="number" step="0.01" placeholder="5000"></div>
                                 </div>
@@ -878,40 +918,6 @@
                                 </thead>
                                 <tbody id="revTableBody"></tbody>
                             </table>
-                        </div>
-                    </div>
-                </div>
-                <!-- CATALOG MANAGER -->
-                <div class="section-block" id="catalogSection" style="display:none;margin-top:20px;">
-                    <div class="section-head">
-                        <h2>Catalogue de <span id="catalogRevName" style="color:var(--accent-dark);"></span></h2>
-                        <button class="btn btn-ghost btn-sm" onclick="closeCatalog()">✕ Fermer</button>
-                    </div>
-                    <div class="section-body">
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
-
-                            <div>
-                                <p
-                                    style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px;margin-bottom:10px;">
-                                    Produits dans le catalogue
-                                </p>
-                                <div id="assignedList"
-                                    style="display:flex;flex-direction:column;gap:6px;max-height:360px;overflow-y:auto;">
-                                </div>
-                            </div>
-
-                            <div>
-                                <p
-                                    style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px;margin-bottom:10px;">
-                                    Produits admin disponibles
-                                </p>
-                                <div id="availableList"
-                                    style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;margin-bottom:12px;">
-                                </div>
-                                <button class="btn btn-primary" onclick="assignSelected()">➕ Assigner la
-                                    sélection</button>
-                            </div>
-
                         </div>
                     </div>
                 </div>
@@ -959,7 +965,6 @@
                                     <option value="true">Actifs</option>
                                     <option value="false">Désactivés</option>
                                 </select>
-
                                 <input id="filterCat" placeholder="Filtrer par catégorie" onkeyup="renderProduits()"
                                     style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;">
                             </div>
@@ -976,7 +981,6 @@
                                         <th>Prix vente</th>
                                         <th>Marge</th>
                                         <th>Statut</th>
-                                        <th>Créé par</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -1210,9 +1214,9 @@
             document.getElementById('dashboard-ops-tbody').innerHTML = last5.length
                 ? last5.map(o => `<tr>
         <td>#${o.id}</td>
-        <td>${o.revendeur.nom} ${o.revendeur.prenom}</td>
-        <td>${o.clientFinal.numeroTelephone}</td>
-        <td><strong>${parseFloat(o.montantTotal).toFixed(2)} DT</strong></td>
+        <td>${o.revendeur ? o.revendeur.nom + ' ' + o.revendeur.prenom : '—'}</td>
+        <td>${o.clientFinal ? o.clientFinal.numeroTelephone : '—'}</td>
+        <td><strong>${parseFloat(o.montantTotal || 0).toFixed(2)} DT</strong></td>
         <td>${fmtDate(o.dateOperation)}</td>
       </tr>`).join('')
                 : '<tr class="empty-row"><td colspan="5">Aucune vente enregistrée</td></tr>';
@@ -1235,15 +1239,15 @@
         <td>${r.ville || '<span style="color:var(--text-muted)">—</span>'}</td>
         <td>${r.categorie || '<span style="color:var(--text-muted)">—</span>'}</td>
         <td>
-  <div style="font-size:12px;">
-    <strong>${parseFloat(r.soldeUtilise || 0).toFixed(2)} DT</strong> / ${parseFloat(r.plafondAutorise || 0).toFixed(2)} DT
-  </div>
-  <div style="width:100%;background:var(--border);border-radius:4px;height:5px;margin-top:3px;">
-    <div style="width:${r.plafondAutorise > 0 ? Math.min(100, (r.soldeUtilise / r.plafondAutorise) * 100) : 0}%;
-                background:${r.plafondAutorise > 0 && (r.soldeUtilise / r.plafondAutorise) > 0.8 ? 'var(--danger)' : 'var(--accent)'};
-                height:100%;border-radius:4px;"></div>
-  </div>
-</td>
+          <div style="font-size:12px;">
+            <strong>${parseFloat(r.soldeUtilise || 0).toFixed(2)} DT</strong> / ${parseFloat(r.plafondAutorise || 0).toFixed(2)} DT
+          </div>
+          <div style="width:100%;background:var(--border);border-radius:4px;height:5px;margin-top:3px;">
+            <div style="width:${r.plafondAutorise > 0 ? Math.min(100, (r.soldeUtilise / r.plafondAutorise) * 100) : 0}%;
+                        background:${r.plafondAutorise > 0 && (r.soldeUtilise / r.plafondAutorise) > 0.8 ? 'var(--danger)' : 'var(--accent)'};
+                        height:100%;border-radius:4px;"></div>
+          </div>
+        </td>
         <td>${r.statut === 'ACTIF'
                         ? `<span class="badge badge-green">Actif</span>`
                         : `<span class="badge badge-red">Suspendu</span><br><small style="color:var(--text-muted)">${r.motifSuspension || ''}</small>`}</td>
@@ -1252,9 +1256,9 @@
                         ? `<button class="btn btn-warn btn-sm" onclick="openSuspend(${r.id})">Suspendre</button>`
                         : `<button class="btn btn-accent btn-sm" onclick="reactivateRevendeur(${r.id})">Réactiver</button>`}
           <button class="btn btn-danger btn-sm" onclick="deleteRevendeur(${r.id}, '${r.nom} ${r.prenom}')">Supprimer</button>
-          <button class="btn btn-accent btn-sm" onclick="openRecharge(${r.id}, '${r.nom} ${r.prenom}', ${r.soldeUtilise || 0})">💰 Recharger</button>
-         <button class="btn btn-ghost btn-sm" onclick="openEditPlafond(${r.id}, '${r.nom} ${r.prenom}', ${r.plafondAutorise || 0})">✎ Modifier plafond</button>
-         <button class="btn btn-ghost btn-sm" onclick="resetDevice(${r.id}, '${r.nom} ${r.prenom}')">📱 Réinitialiser appareil</button>
+          <!-- Recharger button hidden (frontend only) -->
+          <button class="btn btn-ghost btn-sm" onclick="openEditPlafond(${r.id}, '${r.nom} ${r.prenom}', ${r.plafondAutorise || 0})">✎ Modifier plafond</button>
+          <button class="btn btn-ghost btn-sm" onclick="resetDevice(${r.id}, '${r.nom} ${r.prenom}')">📱 Réinitialiser appareil</button>
         </div></td>
       </tr>`).join('')
                 : '<tr class="empty-row"><td colspan="9">Aucun revendeur trouvé</td></tr>';
@@ -1265,12 +1269,25 @@
             const body = {
                 nom: r_nom.value.trim(), prenom: r_prenom.value.trim(),
                 email: r_email.value.trim(), telephone: r_tel.value.trim(),
-                motDePasse: r_pass.value, ville: r_ville.value.trim(),
-                categorie: r_cat.value.trim(),
+                motDePasse: r_pass.value, ville: document.getElementById('r_ville').value,
+                categorie: document.getElementById('r_cat').value,
                 plafondAutorise: r_plafond.value ? parseFloat(r_plafond.value) : 0
             };
             api('/api/revendeurs', { method: 'POST', body: JSON.stringify(body) })
-                .then(r => { allRevendeurs.push(r); e.target.reset(); renderRevendeurs(); renderDashboard(); toast('Revendeur créé avec succès'); })
+                .then(r => {
+                    allRevendeurs.unshift(r);
+                    e.target.reset();
+                    renderRevendeurs();
+                    renderDashboard();
+                    // scroll to top of revendeurs tab so the list is visible
+                    document.getElementById('tab-revendeurs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    showSuccessAlert(
+                        '✅ Revendeur créé avec succès !',
+                        `<strong>${r.nom} ${r.prenom}</strong> a été ajouté à la plateforme ID4A AirTime.<br>
+                         Ville&nbsp;: <em>${r.ville || '—'}</em> &nbsp;|&nbsp; Catégorie&nbsp;: <em>${r.categorie || '—'}</em><br>
+                         Plafond autorisé&nbsp;: <strong>${parseFloat(r.plafondAutorise || 0).toFixed(2)} DT</strong>`
+                    );
+                })
                 .catch(err => toast(err.message, 'error'));
         }
 
@@ -1314,14 +1331,14 @@
 
             document.getElementById('prodTableBody').innerHTML = filtered.length
                 ? filtered.map(p => {
-                    const marge = (parseFloat(p.prixVenteClient) - parseFloat(p.prixAchatRevendeur)).toFixed(2);
+                    const marge = (parseFloat(p.prixVenteClient || 0) - parseFloat(p.prixAchatRevendeur || 0)).toFixed(2);
                     return `<tr>
           <td>#${p.id}</td>
           <td><span class="badge badge-blue">${p.operateur}</span></td>
           <td><strong>${p.nomService}</strong>${p.description ? `<br><small style="color:var(--text-muted)">${p.description}</small>` : ''}</td>
           <td>${p.categorieService ? `<span class="badge badge-blue">${p.categorieService}</span>` : '—'}</td>
-          <td>${parseFloat(p.prixAchatRevendeur).toFixed(2)} DT</td>
-          <td><strong>${parseFloat(p.prixVenteClient).toFixed(2)} DT</strong></td>
+          <td>${parseFloat(p.prixAchatRevendeur || 0).toFixed(2)} DT</td>
+          <td><strong>${parseFloat(p.prixVenteClient || 0).toFixed(2)} DT</strong></td>
           <td style="color:var(--green);font-weight:600">+${marge} DT</td>
           <td>${p.actif ? '<span class="badge badge-green">Actif</span>' : '<span class="badge badge-gray">Désactivé</span>'}</td>
           <td><div class="td-actions">
@@ -1332,7 +1349,7 @@
           </div></td>
         </tr>`;
                 }).join('')
-                : '<tr class="empty-row"><td colspan="8">Aucun produit trouvé</td></tr>';
+                : '<tr class="empty-row"><td colspan="9">Aucun produit trouvé</td></tr>';
         }
 
         function createProduit(e) {
@@ -1345,7 +1362,14 @@
                 prixVenteClient: parseFloat(p_vente.value)
             };
             api('/api/produits', { method: 'POST', body: JSON.stringify(body) })
-                .then(p => { allProduits.push(p); e.target.reset(); renderProduits(); renderDashboard(); toast('Produit créé avec succès'); })
+                .then(p => {
+                    allProduits.unshift(p);
+                    e.target.reset();
+                    renderProduits();
+                    renderDashboard();
+                    document.getElementById('tab-produits').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    toast('✅ Produit « ' + p.nomService + ' » créé avec succès !');
+                })
                 .catch(err => toast(err.message, 'error'));
         }
         function reactivateProduit(id) {
@@ -1373,7 +1397,7 @@
             const telFilter = document.getElementById('filterTel').value.toLowerCase();
             const filtered = allClients.filter(c =>
                 (!opFilter || c.operateur === opFilter) &&
-                (!telFilter || c.numeroTelephone.includes(telFilter))
+                (!telFilter || (c.numeroTelephone || '').includes(telFilter))
             );
             const opColors = { ORANGE: 'badge-orange', TT: 'badge-blue', OOREDOO: 'badge-red' };
             document.getElementById('cliTableBody').innerHTML = filtered.length
@@ -1400,16 +1424,16 @@
             document.getElementById('ops-total').innerText = list.length ? `Total : ${total.toFixed(2)} DT` : '';
             const opColors = { ORANGE: 'badge-orange', TT: 'badge-blue', OOREDOO: 'badge-red' };
             document.getElementById('opsTableBody').innerHTML = list.length
-                ? list.map(o => {
-                    const produits = (o.details || []).map(d => `${d.produit.nomService} ×${d.quantite}`).join(', ');
+                ? [...list].reverse().map(o => {
+                    const produits = (o.details || []).map(d => `${d.produit ? d.produit.nomService : 'Produit'} ×${d.quantite}`).join(', ');
                     return `<tr>
           <td>#${o.id}</td>
-          <td><strong>${o.revendeur.nom} ${o.revendeur.prenom}</strong></td>
-          <td>${o.revendeur.ville || '—'}</td>
-          <td>${o.clientFinal.numeroTelephone}</td>
-          <td><span class="badge ${opColors[o.clientFinal.operateur] || 'badge-gray'}">${o.clientFinal.operateur}</span></td>
+          <td><strong>${o.revendeur ? o.revendeur.nom + ' ' + o.revendeur.prenom : '—'}</strong></td>
+          <td>${o.revendeur ? (o.revendeur.ville || '—') : '—'}</td>
+          <td>${o.clientFinal ? o.clientFinal.numeroTelephone : '—'}</td>
+          <td><span class="badge ${o.clientFinal ? (opColors[o.clientFinal.operateur] || 'badge-gray') : 'badge-gray'}">${o.clientFinal ? o.clientFinal.operateur : '—'}</span></td>
           <td style="max-width:200px;font-size:12px;color:var(--text-muted)">${produits || '—'}</td>
-          <td><strong>${parseFloat(o.montantTotal).toFixed(2)} DT</strong></td>
+          <td><strong>${parseFloat(o.montantTotal || 0).toFixed(2)} DT</strong></td>
           <td>${fmtDate(o.dateOperation)}</td>
         </tr>`;
                 }).join('')
@@ -1493,7 +1517,28 @@
                 .then(() => toast('Appareil réinitialisé'))
                 .catch(err => toast(err.message, 'error'));
         }
+
+        // ── SUCCESS ALERT MODAL ──
+        function showSuccessAlert(title, body) {
+            document.getElementById('successAlertTitle').innerHTML = title;
+            document.getElementById('successAlertBody').innerHTML = body;
+            document.getElementById('successAlertOverlay').classList.add('open');
+        }
+        function closeSuccessAlert() {
+            document.getElementById('successAlertOverlay').classList.remove('open');
+        }
     </script>
+
+    <!-- SUCCESS ALERT MODAL -->
+    <div class="modal-overlay" id="successAlertOverlay" onclick="closeSuccessAlert()" style="align-items:center;">
+        <div class="modal" onclick="event.stopPropagation()" style="text-align:center;max-width:460px;">
+            <div style="font-size:52px;margin-bottom:12px;">🎉</div>
+            <h3 id="successAlertTitle" style="color:var(--green);font-size:18px;margin-bottom:12px;"></h3>
+            <p id="successAlertBody" style="color:var(--text-muted);font-size:14px;line-height:1.6;margin-bottom:24px;"></p>
+            <button class="btn btn-accent" onclick="closeSuccessAlert()" style="padding:10px 32px;font-size:14px;">Super, merci !</button>
+        </div>
+    </div>
+
 </body>
 
 </html>
